@@ -22,23 +22,22 @@ namespace TestWork.Controllers
             command.ExecuteNonQuery();
             command.CommandText = "INSERT INTO Prog_TestPeople(PPL_NAME, PPL_PPL_CODE) VALUES('Tolia', 23)";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestPeople(PPL_NAME, PPL_PPL_CODE) VALUES('Kolia', 12)";
+            command.CommandText = "INSERT INTO Prog_TestPeople(PPL_NAME, PPL_PPL_CODE) VALUES('Tolia', 12)";
             command.ExecuteNonQuery();
             command.CommandText = "INSERT INTO Prog_TestPeople(PPL_NAME, PPL_PPL_CODE) VALUES('Sveta', 32)";
             command.ExecuteNonQuery();
 
             command.CommandText = "DROP TABLE IF EXISTS Prog_TestDocs";
             command.ExecuteNonQuery();
-            command.CommandText = @"CREATE TABLE Prog_TestDocs(DOC_PPL_CODE INTEGER
-                        PRIMARY KEY, DOC_NUM VARCHAR(30), DOC_SERIES VARCHAR(30), DOC_TYPE VARCHAR(30), DOC_DATE VARCHAR(300), FOREIGN KEY (DOC_PPL_CODE)  REFERENCES Prog_TestPeople (PPL_CODE))";
+            command.CommandText = @"CREATE TABLE Prog_TestDocs(DOC_PPL_CODE INTEGER, DOC_NUM VARCHAR(30), DOC_SERIES VARCHAR(30), DOC_TYPE VARCHAR(30), DOC_DATE VARCHAR(300), FOREIGN KEY (DOC_PPL_CODE)  REFERENCES Prog_TestPeople (PPL_CODE))";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE) VALUES(777666, 100,'Паспорт', '2021')";
+            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE, DOC_PPL_CODE) VALUES('777666', '100','Паспорт', '2021', 1)";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE) VALUES(345679, 200,'Водительское', '2021')";
+            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE, DOC_PPL_CODE) VALUES('345679', '200','Водительское', '2021', 1)";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE) VALUES(567650, 300,'Паспорт', '2021')";
+            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE, DOC_PPL_CODE) VALUES('567650', '300','Паспорт', '2021', 2)";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE) VALUES(998756, 400,'Военник', '2021')";
+            command.CommandText = "INSERT INTO Prog_TestDocs(DOC_NUM, DOC_SERIES, DOC_TYPE, DOC_DATE, DOC_PPL_CODE) VALUES('998756', '400','Военник', '2021', 3)";
             command.ExecuteNonQuery();
 
             command.CommandText = "DROP TABLE IF EXISTS Prog_TestAddres";
@@ -59,9 +58,9 @@ namespace TestWork.Controllers
             command.CommandText = @"CREATE TABLE Prog_TestAccnt(ACCNT_CODE INTEGER
                         PRIMARY KEY, ACCNT_ACNT VARCHAR(30), ACCNT_PPL_CODE INTEGER, ACCNT_CRNC VARCHAR(3), ACCNT_NAME VARCHAR(2000), FOREIGN KEY (ACCNT_PPL_CODE)  REFERENCES Prog_TestPeople (PPL_CODE))";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestAccnt(ACCNT_ACNT, ACCNT_PPL_CODE, ACCNT_CRNC, ACCNT_NAME) VALUES('1', 1,'Rub','acc1')";
+            command.CommandText = "INSERT INTO Prog_TestAccnt(ACCNT_ACNT, ACCNT_PPL_CODE, ACCNT_CRNC, ACCNT_NAME) VALUES('1', 2,'Rub','acc1')";
             command.ExecuteNonQuery();
-            command.CommandText = "INSERT INTO Prog_TestAccnt(ACCNT_ACNT, ACCNT_PPL_CODE, ACCNT_CRNC, ACCNT_NAME) VALUES('2', 2,'Evr','acc2')";
+            command.CommandText = "INSERT INTO Prog_TestAccnt(ACCNT_ACNT, ACCNT_PPL_CODE, ACCNT_CRNC, ACCNT_NAME) VALUES('2', 1,'Evr','acc2')";
             command.ExecuteNonQuery();
             command.CommandText = "INSERT INTO Prog_TestAccnt(ACCNT_ACNT, ACCNT_PPL_CODE, ACCNT_CRNC, ACCNT_NAME) VALUES('3', 3,'Doll','acc3')";
             command.ExecuteNonQuery();
@@ -252,7 +251,7 @@ namespace TestWork.Controllers
                 using (var command = new SQLiteCommand(connection))
                 {
                     CreateSql(command);
-                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestBlnc.BLNC_OSTATOK AS ostatok FROM Prog_TestPeople INNER JOIN Prog_TestBlnc, Prog_TestAccnt ON Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_PPL_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE ORDER BY Prog_TestPeople.PPL_NAME";
+                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestPeople.PPL_PPL_CODE AS code, Prog_TestBlnc.BLNC_OSTATOK AS ostatok, Prog_TestBlnc.BLNC_ACCNT_CODE AS accnt_code FROM Prog_TestPeople INNER JOIN Prog_TestBlnc, Prog_TestAccnt ON Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE ORDER BY Prog_TestPeople.PPL_NAME, Prog_TestPeople.PPL_PPL_CODE";
                     var returnArray = new Task1[4];
                     command.CommandText = readQuery;
                     using (SQLiteDataReader reader = command.ExecuteReader())
@@ -263,7 +262,10 @@ namespace TestWork.Controllers
                             returnArray[counter] = new Task1
                             {
                                 PPL_NAME = reader.GetValue(0).ToString(),
-                                BLNC_OSTATOK = reader.GetInt32(1)
+                                PPL_PPL_CODE = reader.GetInt32(1),
+                                BLNC_OSTATOK = reader.GetInt32(2),
+                                BLNC_ACCNT_CODE = reader.GetInt32(3)
+
                             };
                             counter++;
                         }
@@ -282,7 +284,7 @@ namespace TestWork.Controllers
                 using (var command = new SQLiteCommand(connection))
                 {
                     CreateSql(command);
-                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name FROM Prog_TestPeople INNER JOIN Prog_TestDocs ON Prog_TestPeople.PPL_CODE = Prog_TestDocs.DOC_PPL_CODE AND Prog_TestDocs.DOC_TYPE  !=  'Паспорт'";
+                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestPeople.PPL_PPL_CODE AS code FROM Prog_TestPeople LEFT JOIN Prog_TestDocs ON Prog_TestPeople.PPL_CODE = Prog_TestDocs.DOC_PPL_CODE AND Prog_TestDocs.DOC_TYPE  =  'Паспорт' WHERE Prog_TestDocs.DOC_PPL_CODE IS NULL ORDER BY Prog_TestPeople.PPL_NAME, Prog_TestPeople.PPL_PPL_CODE ";
                     var returnArray = new Task2[4];
                     command.CommandText = readQuery;
                     using (SQLiteDataReader reader = command.ExecuteReader())
@@ -292,7 +294,8 @@ namespace TestWork.Controllers
                         {
                             returnArray[counter] = new Task2
                             {
-                                PPL_NAME = reader.GetValue(0).ToString()
+                                PPL_NAME = reader.GetValue(0).ToString(),
+                                PPL_PPL_CODE = reader.GetInt32(1)
                             };
                             counter++;
                         }
@@ -311,7 +314,7 @@ namespace TestWork.Controllers
                 using (var command = new SQLiteCommand(connection))
                 {
                     CreateSql(command);
-                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestBlnc.BLNC_OSTATOK AS ostatok FROM Prog_TestPeople INNER JOIN Prog_TestDocs, Prog_TestBlnc, Prog_TestAccnt ON Prog_TestPeople.PPL_CODE = Prog_TestDocs.DOC_PPL_CODE AND Prog_TestDocs.DOC_TYPE  =  'Паспорт' AND Prog_TestDocs.DOC_NUM  =  '567650' AND Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_PPL_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE";
+                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestPeople.PPL_PPL_CODE AS code, Prog_TestBlnc.BLNC_OSTATOK AS ostatok, Prog_TestBlnc.BLNC_ACCNT_CODE AS accnt_code FROM Prog_TestPeople INNER JOIN Prog_TestDocs, Prog_TestBlnc, Prog_TestAccnt ON Prog_TestPeople.PPL_CODE = Prog_TestDocs.DOC_PPL_CODE AND Prog_TestDocs.DOC_TYPE  =  'Паспорт' AND Prog_TestDocs.DOC_NUM  =  '567650' AND Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE ORDER BY Prog_TestPeople.PPL_NAME, Prog_TestPeople.PPL_PPL_CODE";
                     var returnArray = new Task1[4];
                     command.CommandText = readQuery;
                     using (SQLiteDataReader reader = command.ExecuteReader())
@@ -322,7 +325,9 @@ namespace TestWork.Controllers
                             returnArray[counter] = new Task1
                             {
                                 PPL_NAME = reader.GetValue(0).ToString(),
-                                BLNC_OSTATOK = reader.GetInt32(1)
+                                PPL_PPL_CODE = reader.GetInt32(1),
+                                BLNC_OSTATOK = reader.GetInt32(2),
+                                BLNC_ACCNT_CODE = reader.GetInt32(3)
                             };
                             counter++;
                         }
@@ -341,7 +346,7 @@ namespace TestWork.Controllers
                 using (var command = new SQLiteCommand(connection))
                 {
                     CreateSql(command);
-                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, max(Prog_TestBlnc.BLNC_OSTATOK) AS ostatok, Prog_TestAddres.ADDR_CITY, Prog_TestAddres.ADDR_STREET, Prog_TestAddres.ADDR_HOUSE, Prog_TestAddres.ADDR_FLAT FROM Prog_TestPeople INNER JOIN Prog_TestBlnc, Prog_TestAccnt, Prog_TestAddres ON Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_PPL_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE AND Prog_TestPeople.PPL_CODE = Prog_TestAddres.ADDR_PPL_CODE";
+                    string readQuery = "SELECT Prog_TestPeople.PPL_NAME AS name, Prog_TestPeople.PPL_PPL_CODE AS code, max(Prog_TestBlnc.BLNC_OSTATOK) AS ostatok, Prog_TestAddres.ADDR_CITY, Prog_TestAddres.ADDR_STREET, Prog_TestAddres.ADDR_HOUSE, Prog_TestAddres.ADDR_FLAT, Prog_TestBlnc.BLNC_ACCNT_CODE AS accnt_code FROM Prog_TestPeople INNER JOIN Prog_TestBlnc, Prog_TestAccnt, Prog_TestAddres ON Prog_TestPeople.PPL_CODE = Prog_TestAccnt.ACCNT_PPL_CODE AND Prog_TestAccnt.ACCNT_CODE  =  Prog_TestBlnc.BLNC_ACCNT_CODE AND Prog_TestPeople.PPL_CODE = Prog_TestAddres.ADDR_PPL_CODE ORDER BY Prog_TestPeople.PPL_NAME, Prog_TestPeople.PPL_PPL_CODE";
                     var returnArray = new Task3[4];
                     command.CommandText = readQuery;
                     using (SQLiteDataReader reader = command.ExecuteReader())
@@ -352,11 +357,13 @@ namespace TestWork.Controllers
                             returnArray[counter] = new Task3
                             {
                                 PPL_NAME = reader.GetValue(0).ToString(),
-                                BLNC_OSTATOK = reader.GetInt32(1),
-                                ADDR_CITY = reader.GetValue(2).ToString(),
-                                ADDR_STREET = reader.GetValue(3).ToString(),
-                                ADDR_HOUSE = reader.GetValue(4).ToString(),
-                                ADDR_FLAT = reader.GetValue(5).ToString()
+                                PPL_PPL_CODE = reader.GetInt32(1),
+                                BLNC_OSTATOK = reader.GetInt32(2),
+                                ADDR_CITY = reader.GetValue(3).ToString(),
+                                ADDR_STREET = reader.GetValue(4).ToString(),
+                                ADDR_HOUSE = reader.GetValue(5).ToString(),
+                                ADDR_FLAT = reader.GetValue(6).ToString(),
+                                BLNC_ACCNT_CODE = reader.GetInt32(7)
                             };
                             counter++;
                         }
@@ -367,4 +374,5 @@ namespace TestWork.Controllers
         }
     }
 }
+
 
